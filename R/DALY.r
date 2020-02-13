@@ -26,6 +26,7 @@
 #' @param ageWeghting               logical value (TRUE or FALSE). 
 #' @param outputFolder             outputFolder
 #' @import dplyr
+#' @import lubridate
 #' @export
 calculateDALY <- function (outcomeData,
                            refLifeExpectancy,
@@ -72,11 +73,11 @@ calculateDALY <- function (outcomeData,
         dplyr::left_join(ageCov, by="rowId") %>%
         dplyr::left_join(genderCov, by="rowId")
     
-        #make a age, age at outcome, and then life expectancy at the age of outcome
+    #make a age, age at outcome, and then life expectancy at the age of outcome
     cohort<-cohort %>% 
         dplyr::mutate(startYear = lubridate::year(cohortStartDate)) %>%
         dplyr::mutate(ageAtOutcome = age + round(daysToEvent/365,0)) %>%
-        dplyr::mutate(yeartAtOutcome = startYear + round(daysToEvent/365,0))
+        dplyr::mutate(yearAtOutcome = startYear + round(daysToEvent/365,0))
     
     #cohort only with outcome
     cohortWithOutcome<-cohort[cohort$outcomeCount>=1,]
@@ -84,8 +85,12 @@ calculateDALY <- function (outcomeData,
     refLifeExpectancy= loadLifeExpectancy('KOR')
     
     #add life expectance to the cohort
+    for (i in 1:nrow(cohortWithOutcome)){
+        cohortWithOutcome$nearestYearWithCensus[i]=sort(unique(refLifeExpectancy$startYear))[which.min(abs(cohortWithOutcome$yearAtOutcome[i] - sort(unique(refLifeExpectancy$startYear))))]
+    }
+    
     cohortWithOutcome <- cohortWithOutcome %>%
-        dplyr::inner_join(refLifeExpectancy, by = c("ageAtOutcome"="startAge", "gender"="genderConceptId","yeartAtOutcome"= "startYear"))
+        dplyr::inner_join(refLifeExpectancy, by = c("ageAtOutcome"="startAge", "gender"="genderConceptId","nearestYearWithCensus"= "startYear"))
     
     #split cohort according to the start Year
     cohortByYr<-split(cohort,cohort$startYear)
@@ -108,6 +113,7 @@ calculateDALY <- function (outcomeData,
             burden(disabilityWeight= 1.00, 
                    disabilityStartAge=as.numeric(y[["ageAtOutcome"]]), 
                    duration= as.numeric(y[["expectedLifeRemained"]]),
+                   # duration= as.numeric(y[["ageAtOutcome"]]) + as.numeric(y[["expectedLifeRemained"]]),
                    ageWeighting=ageWeighting, 
                    discount=discount, 
                    age=as.numeric(y[["age"]]))
@@ -115,23 +121,33 @@ calculateDALY <- function (outcomeData,
     })
     
     yldPerEvent=sapply(yld,sum,na.rm=TRUE)/nrow(cohort)
+    yldPerEvent=data.frame(year=as.character(names(yldPerEvent)), yldPerEvent=as.numeric(yldPerEvent), stringsAsFactors=F)
     yllPerEvent=sapply(yll,sum,na.rm=TRUE)/nrow(cohort)
+    yllPerEvent=data.frame(year=as.character(names(yllPerEvent)), yllPerEvent=as.numeric(yllPerEvent), stringsAsFactors=F)
+    if (!all(yldPerEvent$year %in% yllPerEvent$year)){
+        yllPerEvent=union(yllPerEvent, 
+                          data.frame(year=yldPerEvent$year[which(!(yldPerEvent$year %in% yllPerEvent$year))],
+                                     yllPerEvent=0, stringsAsFactors=F)
+        )}
     
     yldSum=sapply(yld,sum,na.rm=TRUE)
+    yldSum=data.frame(year=as.character(names(yldSum)), yldSum=as.numeric(yldSum), stringsAsFactors=F)
     yllSum=sapply(yll,sum,na.rm=TRUE)
+    yllSum=data.frame(year=as.character(names(yllSum)), yllSum=as.numeric(yllSum), stringsAsFactors=F)
+    if (!all(yldSum$year %in% yllSum$year)){
+        yllSum=union(yllSum, 
+                     data.frame(year=yldSum$year[which(!(yldSum$year %in% yllSum$year))],
+                                yllSum=0, stringsAsFactors=F)
+        )}
     
-    result = data.frame(yldPerEvent = yldPerEvent,
-                        yllPerEvent =yllPerEvent,
-                        yldSum = yldSum,
-                        yllSum = yllSum,
-                        dalyPerEvent = (yldSum+yllSum)/nrow(cohort),
-                        dalySum = (yldSum+yllSum)
+    result=yldPerEvent %>% full_join(yllPerEvent, by='year') %>% full_join(yldSum, by='year') %>% full_join(yllSum, by='year'); rownames(result)=result$year;
+    result=data.frame(result,
+                      dalyPerEvent=(result$yldSum+result$yllSum)/nrow(cohort),
+                      dalySum=(result$yldSum+result$yllSum)
     )
-    
     
     tryCatch({
         if (observeStartYr & observeEndYr){
-            
             result<-result[rownames(result) %in% as.character(observeStartYr:observeEndYr),]
         }
     })
@@ -140,8 +156,12 @@ calculateDALY <- function (outcomeData,
 }
 
 ##Helper function for calculating integral in DALY function
+# f<-function(x,ageWeighting,C = 0.1658, beta = 0.04, discount, age){
+#     ageWeighting * C *x *exp(-beta*x)*exp(-discount*(x-age))+ (1-ageWeighting)*exp(-discount*(x-age))
+# }
+
 f<-function(x,ageWeighting,C = 0.1658, beta = 0.04, discount, age){
-    ageWeighting * C *x *exp(-beta*x)*exp(-discount*(x-age))+ (1-ageWeighting)*exp(-discount*(x-age))
+    ageWeighting * C *x *exp(-beta*x)*exp(-discount*(x-age))#+ (1-ageWeighting)*exp(-discount*(x-age))
 }
 
 #'Burden calculation function
@@ -157,6 +177,11 @@ burden <- function(disabilityWeight,
                    ageWeighting,
                    discount,
                    age){
-    burdenValue=disabilityWeight * integrate(f, lower = disabilityStartAge, upper = disabilityStartAge+duration, ageWeighting=ageWeighting, discount=discount, age=age )$value
+    #burdenValue=disabilityWeight * integrate(f, lower = disabilityStartAge, upper = disabilityStartAge+duration, ageWeighting=ageWeighting, discount=discount, age=age )$value
+    C = 0.1658; beta = 0.04
+    #burdenValue = (ageWeighting * ((C * exp(discount * disabilityStartAge)) / (discount+beta)^2) * ((exp(-(discount+beta) * (disabilityStartAge+duration)) * (-(discount+beta) * (disabilityStartAge+duration) -1 )) - (exp(-(discount+beta) * disabilityStartAge) * (-(discount+beta) * disabilityStartAge - 1))) + ((1-ageWeighting)/discount) * ((1-exp(-discount*duration)))) 
+    # When r approaches zero:
+    burdenValue = ageWeighting * C * ((exp(-beta*disabilityStartAge))/beta^2)*((exp(-beta*duration))*(-beta*(disabilityStartAge+duration)-1)-(-beta*disabilityStartAge-1))+((1-ageWeighting)*duration)
+    
     return(burdenValue)
 }

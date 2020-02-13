@@ -13,12 +13,15 @@ cohortTable <- "argos_cohort"
 outputFolder <- "D:/outputFolder"
 options(fftempdir = "D:/FFtemp")
 
+if (!file.exists(outputFolder))
+    dir.create(outputFolder, recursive = TRUE)
+
 survivalTime<-c(365,365*2,365*3,365*4,365*5)
 
 connectionDetails<-DatabaseConnector::createConnectionDetails(dbms = 'sql server',
-                                                              server = Sys.getenv("server53"),
-                                                              user = Sys.getenv("userID"),
-                                                              password = Sys.getenv("userPW"))
+                                                              server = 'server',
+                                                              user = 'user',
+                                                              password = 'pw')
 
 cancerList<-list(cohortId = c(1,2,3,4,5,6),
                  cohortName = c("colon", 'lung', 'stomach','breast','liver','thyroid'),
