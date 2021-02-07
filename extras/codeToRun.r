@@ -5,13 +5,13 @@ startYearSetNHIS = list(2003,2004,2005,2006,2007,2008,2009,2010,2011,2012,2013)
 startYearSet=startYearSetNHIS
 
 ##Settings
-cdmDatabaseSchema <-"NHIS_NSC.dbo"
-vocabularyDatabaseSchema  <- "NHIS_NSC.dbo"
+cdmDatabaseSchema <-"AUSOMv5_3.dbo"
+vocabularyDatabaseSchema  <- "AUSOMv5_3.dbo"
 cohortDatabaseSchema <- "ONCOACHILLES.dbo"
 
-cohortTable <- "argos_cohort"
-outputFolder <- "D:/outputFolder"
-options(fftempdir = "D:/FFtemp")
+cohortTable <- "argos_cohort_0207"
+outputFolder <- "~/output/argos"
+options(fftempdir = "~/FFtemp")
 
 if (!file.exists(outputFolder))
     dir.create(outputFolder, recursive = TRUE)
@@ -21,27 +21,35 @@ survivalTime<-c(365,365*2,365*3,365*4,365*5)
 connectionDetails<-DatabaseConnector::createConnectionDetails(dbms = 'sql server',
                                                               server = 'server',
                                                               user = 'user',
-                                                              password = 'pw')
+                                                              password = 'passwd')
 
-cancerList<-list(cohortId = c(1,2,3,4,5,6),
-                 cohortName = c("colon", 'lung', 'stomach','breast','liver','thyroid'),
-                 conceptIdSet = list(c(435754,443381,443382,443383,443384,443390,443391,4089661,4180790,4180791,4180792,4181344),
-                                     #c(4089661,4180790,4180791,4180792,4181344,435754,443381,443382,443383,443384,443391),
-                                     #c(4157333,4092217,4151250,442139),                
-                                     c(442139,4092217,4094876,4151250,4157333,258375),
-                                     #c(443387,4094856,4095319,4095320),
-                                     c(4149838,197803,4095320,4149837,4095319,4094856,4092061,443387,4095317),
-                                     #c(81251,432845,4158563,4162253               
-                                     c(137809,4188544,4158563,4162253,4155292,4187850,4188545,432845#,81251
-                                     ),
-                                     #c(201519,4001171,4001172,4001664,4003021,4095432,4246127),
-                                     c(201519,4001171,4001172,4001664,4003021,4095432,4246127),
-                                     c(4178976)) ,
-                 
-                 representConceptId = c())
-outcomeId <- 99
+# cancerList<-list(cohortId = c(1,2,3,4,5,6),
+#                  cohortName = c("colon", 'lung', 'stomach','breast','liver','thyroid'),
+#                  conceptIdSet = list(c(435754,443381,443382,443383,443384,443390,443391,4089661,4180790,4180791,4180792,4181344),
+#                                      #c(4089661,4180790,4180791,4180792,4181344,435754,443381,443382,443383,443384,443391),
+#                                      #c(4157333,4092217,4151250,442139),                
+#                                      c(442139,4092217,4094876,4151250,4157333,258375),
+#                                      #c(443387,4094856,4095319,4095320),
+#                                      c(4149838,197803,4095320,4149837,4095319,4094856,4092061,443387,4095317),
+#                                      #c(81251,432845,4158563,4162253               
+#                                      c(137809,4188544,4158563,4162253,4155292,4187850,4188545,432845#,81251
+#                                      ),
+#                                      #c(201519,4001171,4001172,4001664,4003021,4095432,4246127),
+#                                      c(201519,4001171,4001172,4001664,4003021,4095432,4246127),
+#                                      c(4178976)) ,
+#                  
+#                  representConceptId = c())
 
-conditionTypeConceptIds<-c(45756835,45756843,44786627)#primary diagnosis or first position diagnosis
+pathToCsv <- system.file("settings", "CohortsToCreate.csv", package = "Argos")
+cohortsToCreate <- read.csv(pathToCsv)
+
+cancerList<-list(cohortId = cohortsToCreate$cohortId,
+                 cohortName = cohortsToCreate$name
+)
+
+outcomeId <- 20
+
+# conditionTypeConceptIds<-c(45756835,45756843,44786627)#primary diagnosis or first position diagnosis
 
 #set base population
 basePop<-loadMidYearPopulation('KOR')
@@ -59,55 +67,75 @@ ParallelLogger::addDefaultFileLogger(file.path(outputFolder, "log.txt"))
 
 #Connection
 connection<-DatabaseConnector::connect(connectionDetails)
-####Create cohort####
-#create the cohort table
-ParallelLogger::logInfo("Creating table for the cohorts")
-sql <- SqlRender::loadRenderTranslateSql(sqlFilename= "CreateCohortTable.sql",
-                                         packageName = "Argos",
-                                         dbms = attr(connection,"dbms"),
-                                         oracleTempSchema = oracleTempSchema,
-                                         cohort_database_schema = cohortDatabaseSchema,
-                                         cohort_table = cohortTable)
-DatabaseConnector::executeSql(connection, sql, progressBar = TRUE, reportOverallTime = TRUE)
 
-#create the target cohort
-ParallelLogger::logInfo("Creating target cohorts")
-for (i in seq(cancerList$cohortId)){
-    sql <- SqlRender::loadRenderTranslateSql(sqlFilename= "firstEventCohort.sql",
-                                             packageName = "Argos",
-                                             dbms = attr(connection,"dbms"),
-                                             oracleTempSchema = oracleTempSchema,
-                                             cdm_database_schema = cdmDatabaseSchema,
-                                             vocabulary_database_schema = vocabularyDatabaseSchema,
-                                             target_database_schema = cohortDatabaseSchema,
-                                             target_cohort_table = cohortTable,
-                                             #include_descendant = F,
-                                             prior_observation_period = 365*2,
-                                             #specific_condition_type = T,
-                                             #condition_type_concept_ids = paste0(conditionTypeConceptIds,collapse=","),
-                                             condition_concept_ids = paste(cancerList$conceptIdSet[[i]],collapse=","),
-                                             target_cohort_id = cancerList$cohortId[i])
-    # fileCon<-file(file.path(outputFolder,"output.txt"))
-    # writeLines(sql,fileCon)
-    # close(fileCon)
-    DatabaseConnector::executeSql(connection, sql, progressBar = TRUE, reportOverallTime = TRUE)
-}
-
-ParallelLogger::logInfo("Creating outcome cohort (any death)")
-#create the outcome cohort (any death)
-sql <- SqlRender::loadRenderTranslateSql(sqlFilename= "anyDeath.sql",
-                                         packageName = "Argos",
-                                         dbms = attr(connection,"dbms"),
-                                         oracleTempSchema = oracleTempSchema,
-                                         cdm_database_schema = cdmDatabaseSchema,
-                                         vocabulary_database_schema = vocabularyDatabaseSchema,
-                                         target_database_schema = cohortDatabaseSchema,
-                                         target_cohort_table = cohortTable,
-                                         target_cohort_id = outcomeId)
-# fileCon<-file(file.path(outputFolder,"output.txt"))
-# writeLines(sql,fileCon)
-# close(fileCon)
-DatabaseConnector::executeSql(connection, sql, progressBar = TRUE, reportOverallTime = TRUE)
+ 
+ ####Create cohort####
+ #create the cohort table
+ ParallelLogger::logInfo("Creating table for the cohorts")
+ sql <- SqlRender::loadRenderTranslateSql(sqlFilename= "CreateCohortTable.sql",
+                                          packageName = "Argos",
+                                          dbms = attr(connection,"dbms"),
+                                          oracleTempSchema = oracleTempSchema,
+                                          cohort_database_schema = cohortDatabaseSchema,
+                                          cohort_table = cohortTable)
+ DatabaseConnector::executeSql(connection, sql, progressBar = TRUE, reportOverallTime = TRUE)
+ 
+ #create the cancer cohorts
+ pathToCsv <- system.file("settings", "CohortsToCreate.csv", package = "Argos")
+ cohortsToCreate <- read.csv(pathToCsv)
+ for (i in 1:nrow(cohortsToCreate)) {
+     writeLines(paste("Creating cohort:", cohortsToCreate$name[i]))
+     sql <- SqlRender::loadRenderTranslateSql(sqlFilename = paste0(cohortsToCreate$name[i], ".sql"),
+                                              packageName = "Argos",
+                                              dbms = attr(connection, "dbms"),
+                                              oracleTempSchema = oracleTempSchema,
+                                              cdm_database_schema = cdmDatabaseSchema,
+                                              vocabulary_database_schema = vocabularyDatabaseSchema,
+                                              
+                                              target_database_schema = cohortDatabaseSchema,
+                                              target_cohort_table = cohortTable,
+                                              target_cohort_id = cohortsToCreate$cohortId[i])
+     DatabaseConnector::executeSql(connection, sql)
+ }
+ 
+ # #create the target cohort
+ # ParallelLogger::logInfo("Creating target cohorts")
+ # for (i in seq(cancerList$cohortId)){
+ #     sql <- SqlRender::loadRenderTranslateSql(sqlFilename= "firstEventCohort.sql",
+ #                                              packageName = "Argos",
+ #                                              dbms = attr(connection,"dbms"),
+ #                                              oracleTempSchema = oracleTempSchema,
+ #                                              cdm_database_schema = cdmDatabaseSchema,
+ #                                              vocabulary_database_schema = vocabularyDatabaseSchema,
+ #                                              target_database_schema = cohortDatabaseSchema,
+ #                                              target_cohort_table = cohortTable,
+ #                                              #include_descendant = F,
+ #                                              prior_observation_period = 365*2,
+ #                                              #specific_condition_type = T,
+ #                                              #condition_type_concept_ids = paste0(conditionTypeConceptIds,collapse=","),
+ #                                              condition_concept_ids = paste(cancerList$conceptIdSet[[i]],collapse=","),
+ #                                              target_cohort_id = cancerList$cohortId[i])
+ #     # fileCon<-file(file.path(outputFolder,"output.txt"))
+ #     # writeLines(sql,fileCon)
+ #     # close(fileCon)
+ #     DatabaseConnector::executeSql(connection, sql, progressBar = TRUE, reportOverallTime = TRUE)
+ # }
+ 
+ ParallelLogger::logInfo("Creating outcome cohort (any death)")
+ #create the outcome cohort (any death)
+ sql <- SqlRender::loadRenderTranslateSql(sqlFilename= "anyDeath.sql",
+                                          packageName = "Argos",
+                                          dbms = attr(connection,"dbms"),
+                                          oracleTempSchema = oracleTempSchema,
+                                          cdm_database_schema = cdmDatabaseSchema,
+                                          vocabulary_database_schema = vocabularyDatabaseSchema,
+                                          target_database_schema = cohortDatabaseSchema,
+                                          target_cohort_table = cohortTable,
+                                          target_cohort_id = outcomeId)
+ # fileCon<-file(file.path(outputFolder,"output.txt"))
+ # writeLines(sql,fileCon)
+ # close(fileCon)
+ DatabaseConnector::executeSql(connection, sql, progressBar = TRUE, reportOverallTime = TRUE)
 
 
 ####Get incidence data####
