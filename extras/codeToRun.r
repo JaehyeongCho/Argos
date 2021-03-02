@@ -118,7 +118,7 @@ CohortDiagnostics::launchDiagnosticsExplorer(file.path(outputFolder, "diagnostic
 # Where 123 is the ID of the cohort you wish to inspect.
 
 ###############################
-
+ 
  ####Create cohort####
  #create the cohort table
  ParallelLogger::logInfo("Creating table for the cohorts")
