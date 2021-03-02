@@ -119,12 +119,6 @@ CohortDiagnostics::launchDiagnosticsExplorer(file.path(outputFolder, "diagnostic
 
 ###############################
 
-
-
-
-
-
- 
  ####Create cohort####
  #create the cohort table
  ParallelLogger::logInfo("Creating table for the cohorts")
