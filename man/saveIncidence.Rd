@@ -4,8 +4,13 @@
 \alias{saveIncidence}
 \title{saving tables and plot image which are the results incidence analysis}
 \usage{
-saveIncidence(outputFolder, bybirthPlot, ageSpePlot, ageAdjPlot,
-  imageExtension = "png")
+saveIncidence(
+  outputFolder,
+  bybirthPlot,
+  ageSpePlot,
+  ageAdjPlot,
+  imageExtension = "png"
+)
 }
 \arguments{
 \item{imageExtension}{plot file's extension}

@@ -4,11 +4,22 @@
 \alias{readySurvData}
 \title{get outcome  data}
 \usage{
-readySurvData(connectionDetails, cdmDatabaseSchema, cohortDatabaseSchema,
-  outcomeDatabaseSchema, cohortTable, covariateSettings, targetCohortId,
-  outcomeId, requireTimeAtRisk = FALSE, minTimeAtRisk = 1,
-  riskWindowStart = 0, riskWindowEnd = 365 * 5,
-  removeSubjectsWithPriorOutcome = TRUE, minDateUnit = "year")
+readySurvData(
+  connectionDetails,
+  cdmDatabaseSchema,
+  cohortDatabaseSchema,
+  outcomeDatabaseSchema,
+  cohortTable,
+  covariateSettings,
+  targetCohortId,
+  outcomeId,
+  requireTimeAtRisk = FALSE,
+  minTimeAtRisk = 1,
+  riskWindowStart = 0,
+  riskWindowEnd = 365 * 5,
+  removeSubjectsWithPriorOutcome = TRUE,
+  minDateUnit = "year"
+)
 }
 \arguments{
 \item{targetCohortId}{cancer type cohort id}

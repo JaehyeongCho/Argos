@@ -1,0 +1,21 @@
+cohortName,ruleSequence,ruleName,cohortId
+Bladder_cancer,0,Hospitalization with primary diagnosis of cancer,111
+Breast_cancer,0,Hospitalization with primary diagnosis of cancer,10
+Broad_Thyroid_cancer,0,Hospitalization with primary diagnosis of cancer,19
+Cancer,0,Hospitalization with primary diagnosis of cancer,102
+Cancer_except_skin,0,Hospitalization with primary diagnosis of cancer,101
+Cancer_except_thyroid,0,Hospitalization with primary diagnosis of cancer,103
+Cervix_uteri_cancer,0,Hospitalization with primary diagnosis of cancer,112
+Colorectal_cancer,0,Hospitalization with primary diagnosis of cancer,106
+Corpus_uteri_cancer,0,Hospitalization with primary diagnosis of cancer,113
+Esophagus_cancer,0,Hospitalization with primary diagnosis of cancer,105
+GB_and_biliary_tract_cancer,0,Hospitalization with primary diagnosis of cancer,114
+Head_n_neck_cancer,0,Hospitalization with primary diagnosis of cancer,115
+Leukemia,0,Hospitalization with primary diagnosis of cancer,116
+Liver_cancer,0,Hospitalization with primary diagnosis of cancer,108
+Lung_cancer,0,Hospitalization with primary diagnosis of cancer,107
+Ovary_cancer,0,Hospitalization with primary diagnosis of cancer,117
+Pancreas_cancer,0,Hospitalization with primary diagnosis of cancer,118
+Prostate_cancer,0,Hospitalization with primary diagnosis of cancer,109
+Stomach_cancer,0,Hospitalization with primary diagnosis of cancer,104
+Thyroid_cancer,0,Hospitalization with primary diagnosis of cancer,119

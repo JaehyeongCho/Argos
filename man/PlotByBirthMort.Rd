@@ -4,8 +4,13 @@
 \alias{PlotByBirthMort}
 \title{plot mortality proportion}
 \usage{
-PlotByBirthMort(mortalityPropdata, title, outputFolder, fileName,
-  imageExtension = "png")
+PlotByBirthMort(
+  mortalityPropdata,
+  title,
+  outputFolder,
+  fileName,
+  imageExtension = "png"
+)
 }
 \description{
 plot mortality proportion

@@ -4,10 +4,14 @@
 \alias{calculateSurvival}
 \title{Calculating survival rate function}
 \usage{
-calculateSurvival(survivalData = survivalData, Agedivided = TRUE,
+calculateSurvival(
+  survivalData = survivalData,
+  Agedivided = TRUE,
   AgeSet = list(30:39, 40:49, 50:59, 60:69, 70:79, 80:99),
-  genderSet = list(8507, 8532), startYearSet = startYearSet,
-  observationEndYear = 2013)
+  genderSet = list(8507, 8532),
+  startYearSet = startYearSet,
+  observationEndYear = 2013
+)
 }
 \arguments{
 \item{survivalData}{outcome of Argos package readySurvData code}

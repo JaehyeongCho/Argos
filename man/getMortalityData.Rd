@@ -4,9 +4,16 @@
 \alias{getMortalityData}
 \title{get mortality rate}
 \usage{
-getMortalityData(connectionDetails, cdmDatabaseSchema,
-  cohortDatabaseSchema, outcomeDatabaseSchema, cohortTable, targetCohortId,
-  outcomeId = 99, minDateUnit = "year")
+getMortalityData(
+  connectionDetails,
+  cdmDatabaseSchema,
+  cohortDatabaseSchema,
+  outcomeDatabaseSchema,
+  cohortTable,
+  targetCohortId,
+  outcomeId = 99,
+  minDateUnit = "year"
+)
 }
 \arguments{
 \item{cdmDatabaseSchema}{}

@@ -4,9 +4,11 @@
 \alias{survivalCal}
 \title{calculate survival rate using survival package}
 \usage{
-survivalCal(survivalDuration = survivalTime,
+survivalCal(
+  survivalDuration = survivalTime,
   outcomeCount = outcomeCount,
-  survivalDurationTime = survivalDurationTime)
+  survivalDurationTime = survivalDurationTime
+)
 }
 \arguments{
 \item{survivalDuration}{time gap between first diagnosis date and death date or last observation date (survivalTime)}

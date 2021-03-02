@@ -4,8 +4,14 @@
 \alias{burden}
 \title{Burden calculation function}
 \usage{
-burden(disabilityWeight, disabilityStartAge, duration, ageWeighting,
-  discount, age)
+burden(
+  disabilityWeight,
+  disabilityStartAge,
+  duration,
+  ageWeighting,
+  discount,
+  age
+)
 }
 \description{
 Burden calculation function

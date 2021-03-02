@@ -4,14 +4,21 @@
 \alias{getOutcomeData}
 \title{get outcome  data}
 \usage{
-getOutcomeData(connectionDetails = connectionDetails,
+getOutcomeData(
+  connectionDetails = connectionDetails,
   cdmDatabaseSchema = cdmDatabaseSchema,
   cohortDatabaseSchema = cohortDatabaseSchema,
   outcomeDatabaseSchema = cohortDatabaseSchema,
-  cohortTable = cohortTable, covariateSettings = covariateSettings,
-  targetCohortId, outcomeId, requireTimeAtRisk = TRUE,
-  riskWindowStart = 0, riskWindowEnd = 365 * 2,
-  removeSubjectsWithPriorOutcome = TRUE, minDateUnit = "year")
+  cohortTable = cohortTable,
+  covariateSettings = covariateSettings,
+  targetCohortId,
+  outcomeId,
+  requireTimeAtRisk = TRUE,
+  riskWindowStart = 0,
+  riskWindowEnd = 365 * 2,
+  removeSubjectsWithPriorOutcome = TRUE,
+  minDateUnit = "year"
+)
 }
 \arguments{
 \item{basePopulation}{}

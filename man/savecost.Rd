@@ -4,8 +4,13 @@
 \alias{savecost}
 \title{saving tables and plot image which are the results cost analysis}
 \usage{
-savecost(outputFolder, PlottotalcostperYrdiv, plotperYrBarplotPayer,
-  plotperYrBarplotPatient, imageExtension = "png")
+savecost(
+  outputFolder,
+  PlottotalcostperYrdiv,
+  plotperYrBarplotPayer,
+  plotperYrBarplotPatient,
+  imageExtension = "png"
+)
 }
 \arguments{
 \item{PlottotalcostperYrdiv}{}

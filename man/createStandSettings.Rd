@@ -4,10 +4,16 @@
 \alias{createStandSettings}
 \title{Creating setting for age/gender/race/ethnicity standardization}
 \usage{
-createStandSettings(ageStandardization = TRUE,
-  ageGroupStandardization = FALSE, genderStandardization = TRUE,
-  raceStandardization = FALSE, ethnicityStandardization = FALSE,
-  mode = "direct", basePopulation, year = 2007)
+createStandSettings(
+  ageStandardization = TRUE,
+  ageGroupStandardization = FALSE,
+  genderStandardization = TRUE,
+  raceStandardization = FALSE,
+  ethnicityStandardization = FALSE,
+  mode = "direct",
+  basePopulation,
+  year = 2007
+)
 }
 \description{
 Creating setting for age/gender/race/ethnicity standardization
